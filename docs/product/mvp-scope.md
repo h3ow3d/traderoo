@@ -42,6 +42,25 @@ The Traderoo MVP will provide a safe, auditable, paper-only system that can:
 
 ## 3. In scope
 
+## 3.0 Chunk 1 runtime skeleton
+
+The first runtime milestone includes a minimal FastAPI app in `traderoo-poc` with:
+
+```text
+GET /healthz
+GET /readyz
+GET /
+```
+
+This runtime does not include database persistence and must run with:
+
+```text
+APP_NAME=traderoo
+APP_ENV=poc
+EXECUTION_MODE=PAPER_ONLY
+REVIEW_PROVIDER=mock
+```
+
 ## 3.1 Local platform
 
 The MVP includes a local Kubernetes platform:

@@ -2,7 +2,7 @@
 
 Traderoo is a local Kubernetes-hosted, paper-only AI trading control plane proof of concept.
 
-Current status: Chunk 0 (platform and repository bootstrap).
+Current status: Chunk 1 (minimal runtime skeleton).
 
 ## Safety
 
@@ -11,26 +11,26 @@ Traderoo MVP is paper-only.
 Required defaults in this repository:
 
 - `APP_NAME=traderoo`
+- `APP_ENV=poc`
 - `EXECUTION_MODE=PAPER_ONLY`
 - `REVIEW_PROVIDER=mock`
-- `ENVIRONMENT=poc` (poc overlay)
 - Namespace: `traderoo-poc`
 - k3d cluster name: `traderoo`
 
 No live broker integration or real-money execution exists in Chunk 0.
 
-## Chunk 0 scope
+## Chunk 1 scope
 
 This chunk includes:
 
-- repository skeleton folders
-- local k3d cluster definition
-- Argo CD install guide
-- separate platform bootstrap and application ownership layout
-- platform-services Helm wrapper chart skeleton for AppProjects
-- Kustomize base and poc overlay placeholder manifests
-- Argo CD Application manifest
-- Makefile operator commands
+- minimal FastAPI runtime under `app/`
+- endpoints: `/healthz`, `/readyz`, `/`
+- strict `EXECUTION_MODE=PAPER_ONLY` guardrail in configuration
+- unit tests for runtime endpoints and configuration defaults
+- Dockerfile for local image build (`traderoo:local`)
+- application-owned Kubernetes `Deployment` and `Service`
+- probes on `/healthz` and `/readyz`
+- Makefile and CI updates for runtime validation
 
 This chunk does not include:
 
@@ -68,14 +68,32 @@ make argocd-port-forward
 
 Argo CD UI: https://localhost:8081
 
-Apply local manifests directly:
+Run runtime locally:
+
+```bash
+make install
+make test
+make run
+curl -fsS http://127.0.0.1:8000/healthz
+curl -fsS http://127.0.0.1:8000/readyz
+curl -fsS http://127.0.0.1:8000/
+```
+
+Render Kubernetes manifests locally:
 
 ```bash
 make validate-k8s-local
-kubectl get configmap traderoo-config -n traderoo-poc -o yaml
+make kustomize-traderoo-poc
 ```
 
-Apply Argo CD application after replacing the repository URL placeholder:
+Build and import runtime image before applying Traderoo app in-cluster:
+
+```bash
+make docker-build
+make traderoo-image-import
+```
+
+Apply Argo CD application:
 
 ```bash
 make platform-apply

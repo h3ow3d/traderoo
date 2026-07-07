@@ -21,7 +21,13 @@ jobs:
           set -euo pipefail
 
           required_paths=(
-            "app/.gitkeep"
+            "app/pyproject.toml"
+            "app/Dockerfile"
+            "app/traderoo/__init__.py"
+            "app/traderoo/config.py"
+            "app/traderoo/main.py"
+            "app/tests/test_config.py"
+            "app/tests/test_health.py"
             "scripts/.gitkeep"
             "tests/.gitkeep"
             "platform/k3d/cluster.yaml"
@@ -34,6 +40,8 @@ jobs:
             "platform/charts/platform-services/templates/appproject-applications.yaml"
             "platform/charts/platform-services/templates/namespaces-application-environments.yaml"
             "applications/traderoo/k8s/base/configmap.yaml"
+            "applications/traderoo/k8s/base/deployment.yaml"
+            "applications/traderoo/k8s/base/service.yaml"
             "applications/traderoo/k8s/base/kustomization.yaml"
             "applications/traderoo/k8s/overlays/poc/kustomization.yaml"
             "applications/traderoo/k8s/overlays/poc/configmap-patch.yaml"
@@ -108,10 +116,52 @@ jobs:
         run: |
           set -euo pipefail
 
+          grep -E "kind:[[:space:]]*Deployment|kind:[[:space:]]*Service|name:[[:space:]]*traderoo|containerPort:[[:space:]]*8000" /tmp/poc-rendered.yaml
+          grep -E "APP_ENV:[[:space:]]*poc|EXECUTION_MODE:[[:space:]]*PAPER_ONLY|REVIEW_PROVIDER:[[:space:]]*mock" /tmp/poc-rendered.yaml
           grep -E "EXECUTION_MODE:[[:space:]]*PAPER_ONLY|REVIEW_PROVIDER:[[:space:]]*mock" /tmp/poc-rendered.yaml
           grep -E "kind:[[:space:]]*Namespace" /tmp/base-rendered.yaml /tmp/poc-rendered.yaml && exit 1 || true
 
           echo "Kubernetes manifest checks passed."
+
+  python-runtime-checks:
+    name: python-runtime-checks
+    runs-on: ubuntu-latest
+    needs: repo-checks
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install runtime and test dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -e app[dev]
+
+      - name: Run tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pytest app/tests
+
+  docker-build-checks:
+    name: docker-build-checks
+    runs-on: ubuntu-latest
+    needs: repo-checks
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build traderoo image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build -t traderoo:local app
 
   paper-only-policy-checks:
     name: paper-only-policy-checks
@@ -144,3 +194,35 @@ jobs:
           fi
 
           echo "Paper-only policy scan passed."
+
+  no-secrets-checks:
+    name: no-secrets-checks
+    runs-on: ubuntu-latest
+    needs: repo-checks
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify no obvious plaintext secrets in executable/config areas
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          scan_paths=(
+            "app"
+            "applications"
+            "platform"
+            "scripts"
+            "tests"
+            ".github/workflows"
+            "Makefile"
+          )
+
+          prohibited='password:[[:space:]]|secret:[[:space:]]|api_key:[[:space:]]|token:[[:space:]]'
+
+          if grep -RInE "$prohibited" "${scan_paths[@]}"; then
+            echo "Found potential plaintext secret patterns in executable/config areas:"
+            exit 1
+          fi
+
+          echo "No-secrets policy scan passed."

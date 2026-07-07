@@ -852,6 +852,23 @@ Argo CD deploys manifests. It does not build application images.
 
 Application image build and registry publishing will be handled later.
 
+Chunk 1 runtime endpoints:
+
+```text
+GET /healthz
+GET /readyz
+GET /
+```
+
+Chunk 1 runtime configuration defaults:
+
+```text
+APP_NAME=traderoo
+APP_ENV=poc
+EXECUTION_MODE=PAPER_ONLY
+REVIEW_PROVIDER=mock
+```
+
 ---
 
 ## 10. Repository structure

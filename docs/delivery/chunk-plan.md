@@ -177,13 +177,14 @@ Create a minimal runnable application that can run locally and in Kubernetes.
 ## In scope
 
 * FastAPI application
-* `/health` endpoint
-* placeholder dashboard page
+* `/healthz` endpoint
+* `/readyz` endpoint
+* `/` JSON info endpoint
 * environment-based config
 * Dockerfile
 * basic Kubernetes deployment/service
 * local run commands
-* tests for health endpoint
+* tests for runtime endpoints and config guardrails
 
 ## Out of scope
 
@@ -200,7 +201,7 @@ Create a minimal runnable application that can run locally and in Kubernetes.
 Traderoo should respond to:
 
 ```text
-GET /health
+GET /healthz
 ```
 
 with:
@@ -209,7 +210,14 @@ with:
 {"status": "ok"}
 ```
 
-The root page should show a simple placeholder Traderoo dashboard.
+Traderoo should also respond to:
+
+```text
+GET /readyz
+GET /
+```
+
+where `/readyz` confirms paper-only mock readiness and `/` returns runtime app metadata.
 
 ## Acceptance criteria
 
@@ -217,7 +225,9 @@ Local:
 
 * `make install` works.
 * `make run` starts the app.
-* `curl http://localhost:8000/health` returns `{"status":"ok"}`.
+* `curl http://localhost:8000/healthz` returns `{"status":"ok"}`.
+* `curl http://localhost:8000/readyz` returns HTTP 200 and paper-only/mock values.
+* `curl http://localhost:8000/` returns app metadata JSON.
 * `make test` passes.
 
 Kubernetes:
@@ -225,7 +235,7 @@ Kubernetes:
 * app image can be built.
 * manifests deploy the app into `traderoo-poc`.
 * service can be port-forwarded.
-* `/health` works through the port-forward.
+* `/healthz`, `/readyz`, and `/` work through the port-forward.
 
 ## Validation commands
 
@@ -233,16 +243,21 @@ Kubernetes:
 make install
 make test
 make run
-curl http://localhost:8000/health
+curl http://localhost:8000/healthz
+curl http://localhost:8000/readyz
+curl http://localhost:8000/
 ```
 
 Kubernetes validation:
 
 ```bash
 make docker-build
-make k8s-apply
-make k8s-port-forward
-curl http://localhost:8000/health
+make traderoo-image-import
+make traderoo-apply
+kubectl port-forward -n traderoo-poc svc/traderoo 8000:8000
+curl http://localhost:8000/healthz
+curl http://localhost:8000/readyz
+curl http://localhost:8000/
 ```
 
 ---

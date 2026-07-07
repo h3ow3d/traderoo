@@ -116,9 +116,10 @@ Platform/application ownership boundary is documented in ADR 0006.
 | Area                  | Validation                              |
 | --------------------- | --------------------------------------- |
 | Local app             | FastAPI starts locally                  |
-| Health endpoint       | `/health` returns ok                    |
-| Placeholder dashboard | `/` returns a basic Traderoo page       |
-| Tests                 | health endpoint test passes             |
+| Health endpoint       | `/healthz` returns ok                   |
+| Readiness endpoint    | `/readyz` returns paper-only mock ready |
+| Root endpoint         | `/` returns Traderoo app info JSON      |
+| Tests                 | runtime and config tests pass           |
 | Kubernetes            | app can run in cluster                  |
 | Safety                | no database/trading/OpenAI logic exists |
 
@@ -128,16 +129,21 @@ Platform/application ownership boundary is documented in ADR 0006.
 make install
 make test
 make run
-curl http://localhost:8000/health
+curl http://localhost:8000/healthz
+curl http://localhost:8000/readyz
+curl http://localhost:8000/
 ```
 
 Kubernetes:
 
 ```bash id="900s7b"
 make docker-build
-make k8s-apply
-make k8s-port-forward
-curl http://localhost:8000/health
+make traderoo-image-import
+make traderoo-apply
+kubectl port-forward -n traderoo-poc svc/traderoo 8000:8000
+curl http://localhost:8000/healthz
+curl http://localhost:8000/readyz
+curl http://localhost:8000/
 ```
 
 ### Expected result

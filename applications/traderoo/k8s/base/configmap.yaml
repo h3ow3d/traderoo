@@ -5,6 +5,6 @@ metadata:
   namespace: traderoo-poc
 data:
   APP_NAME: traderoo
+  APP_ENV: poc
   EXECUTION_MODE: PAPER_ONLY
   REVIEW_PROVIDER: mock
-  ENVIRONMENT: base
