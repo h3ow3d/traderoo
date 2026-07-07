@@ -32,9 +32,12 @@ Open: https://localhost:8081
 
 ## Root Applications
 
-Apply once after Argo CD installation:
+Apply platform first, wait for AppProjects, then apply Traderoo application:
 
 ```bash
 kubectl apply -f platform/bootstrap/argocd/root-platform-application.yaml
-kubectl apply -f platform/bootstrap/argocd/root-applications-application.yaml
+kubectl get appproject platform -n argocd
+kubectl get appproject traderoo-poc -n argocd
+kubectl get namespace traderoo-poc
+kubectl apply -f applications/traderoo/argocd/poc.yaml
 ```

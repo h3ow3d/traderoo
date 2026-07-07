@@ -1,15 +1,15 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: traderoo
+  name: traderoo-poc
   namespace: argocd
 spec:
-  project: default
+  project: traderoo-poc
   source:
     # Replace this placeholder with your actual GitHub repository URL.
     repoURL: https://github.com/h3ow3d/traderoo.git
     targetRevision: HEAD
-    path: applications/traderoo/k8s/overlays/local
+    path: applications/traderoo/k8s/overlays/poc
   destination:
     server: https://kubernetes.default.svc
     namespace: traderoo-poc
@@ -17,5 +17,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true

@@ -168,7 +168,6 @@ Vault auth method and policy boundaries (later)
 Application layer owns Traderoo runtime delivery:
 
 ```text
-root applications Application
 Traderoo Argo CD Application spec
 Traderoo Kubernetes manifests
 Traderoo ServiceAccounts
@@ -181,14 +180,15 @@ The platform-services wrapper chart must not own the Traderoo application deploy
 
 Traderoo consumes Vault/ESO capability but does not install or manage Vault/ESO.
 
-Use separate Argo CD roots:
+Use platform-first bootstrap flow:
 
 ```text
 manually bootstrap Argo CD once
 apply root platform Application once
-apply root applications Application once
-platform root manages platform services
-applications root manages application-owned Argo CD Application specs
+wait for AppProjects to exist
+apply Traderoo application Application manually
+platform root manages platform services and AppProjects
+Traderoo application manifest remains application-owned
 ```
 
 Vault does not permit broker credentials or live trading.
@@ -609,7 +609,7 @@ platform/k3d/
 platform/bootstrap/argocd/
 applications/traderoo/argocd/
 applications/traderoo/k8s/base/
-applications/traderoo/k8s/overlays/local/
+applications/traderoo/k8s/overlays/poc/
 ```
 
 The default namespace is:

@@ -80,7 +80,14 @@ kubectl get pods -n argocd
 
 helm lint platform/charts/platform-services
 helm template platform-services platform/charts/platform-services --dry-run=client > /tmp/platform-services.yaml
-grep -E "kind: AppProject|name: platform|name: applications" /tmp/platform-services.yaml
+grep -E "kind: AppProject|name: platform|name: traderoo-poc|kind: Namespace" /tmp/platform-services.yaml
+grep -E "name:[[:space:]]*poc|name:[[:space:]]*applications|name:[[:space:]]*traderoo-dev|name:[[:space:]]*traderoo-staging|name:[[:space:]]*traderoo-demo|name:[[:space:]]*traderoo-production" /tmp/platform-services.yaml && exit 1 || true
+
+kubectl apply -f platform/bootstrap/argocd/root-platform-application.yaml
+kubectl get appproject platform -n argocd
+kubectl get appproject traderoo-poc -n argocd
+kubectl get namespace traderoo-poc
+kubectl apply -f applications/traderoo/argocd/poc.yaml
 
 make validate-k8s-local
 kubectl get ns traderoo-poc
@@ -94,7 +101,8 @@ test -f docs/adr/0006-separate-platform-services-from-application-gitops.md
 ```text id="wv2uum"
 Local k3d cluster exists.
 Argo CD is running.
-Platform chart renders AppProjects for platform and applications.
+Platform chart renders AppProjects for platform and traderoo-poc.
+Platform chart renders namespace traderoo-poc.
 traderoo-poc namespace exists.
 traderoo-config ConfigMap exists.
 EXECUTION_MODE is PAPER_ONLY.

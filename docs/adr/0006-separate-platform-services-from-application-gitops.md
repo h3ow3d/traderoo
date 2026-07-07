@@ -38,23 +38,24 @@ no real secrets in Git
 
 Traderoo will separate platform services from application consumers as follows.
 
-### GitOps root model
+### GitOps bootstrap model
 
-Traderoo will use separate Argo CD roots for platform and applications.
+Traderoo will keep a single active root platform Application.
 
 Bootstrap flow:
 
 ```text
 manually bootstrap Argo CD once
 apply root platform Application once
-apply root applications Application once
+wait for platform AppProjects to exist
+apply Traderoo application Application manually
 ```
 
 Steady-state ownership:
 
 ```text
-platform root manages platform services
-applications root manages application-owned Argo CD Application specs
+platform root manages platform services and AppProjects
+Traderoo application manifest remains application-owned and is applied after platform is healthy
 ```
 
 ### Platform services are shared cluster capabilities
@@ -76,7 +77,6 @@ Vault auth method and policy boundaries (later)
 The application layer owns Traderoo runtime delivery and namespaced resources, including:
 
 ```text
-root applications Application
 Traderoo Argo CD Application spec
 applications/traderoo/k8s Traderoo manifests
 Traderoo ServiceAccounts

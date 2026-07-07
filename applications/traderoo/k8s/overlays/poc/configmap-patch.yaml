@@ -4,4 +4,4 @@ metadata:
   name: traderoo-config
   namespace: traderoo-poc
 data:
-  ENVIRONMENT: local
+  ENVIRONMENT: poc
