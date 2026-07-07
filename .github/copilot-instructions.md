@@ -157,26 +157,39 @@ Platform layer owns shared cluster capabilities:
 
 ```text
 Argo CD installation/bootstrap
+root platform Application
 platform-services wrapper chart
-Vault installation
-External Secrets Operator installation
+Vault Application (later)
+External Secrets Operator Application (later)
 Argo CD AppProjects and deployment guardrails
-Vault auth method and policy boundaries
+Vault auth method and policy boundaries (later)
 ```
 
 Application layer owns Traderoo runtime delivery:
 
 ```text
-Traderoo Argo CD Application
+root applications Application
+Traderoo Argo CD Application spec
 Traderoo Kubernetes manifests
-Traderoo namespace resources within platform-approved boundaries
 Traderoo ServiceAccounts
 Traderoo ConfigMaps
-Traderoo ExternalSecret resources referencing platform-provided Vault/ESO capability
+Traderoo ExternalSecret resources
 Traderoo workloads
 ```
 
 The platform-services wrapper chart must not own the Traderoo application deployment.
+
+Traderoo consumes Vault/ESO capability but does not install or manage Vault/ESO.
+
+Use separate Argo CD roots:
+
+```text
+manually bootstrap Argo CD once
+apply root platform Application once
+apply root applications Application once
+platform root manages platform services
+applications root manages application-owned Argo CD Application specs
+```
 
 Vault does not permit broker credentials or live trading.
 

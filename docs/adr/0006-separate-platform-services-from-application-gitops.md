@@ -38,17 +38,37 @@ no real secrets in Git
 
 Traderoo will separate platform services from application consumers as follows.
 
+### GitOps root model
+
+Traderoo will use separate Argo CD roots for platform and applications.
+
+Bootstrap flow:
+
+```text
+manually bootstrap Argo CD once
+apply root platform Application once
+apply root applications Application once
+```
+
+Steady-state ownership:
+
+```text
+platform root manages platform services
+applications root manages application-owned Argo CD Application specs
+```
+
 ### Platform services are shared cluster capabilities
 
 The platform layer owns shared cluster capabilities and safety guardrails, including:
 
 ```text
 Argo CD installation/bootstrap
+root platform Application
 platform-services Helm wrapper chart
-Vault installation
-External Secrets Operator installation
+Vault Application (later)
+External Secrets Operator Application (later)
 Argo CD AppProjects and deployment guardrails
-Vault auth method and policy boundaries
+Vault auth method and policy boundaries (later)
 ```
 
 ### Traderoo application is a consumer of platform services
@@ -56,12 +76,12 @@ Vault auth method and policy boundaries
 The application layer owns Traderoo runtime delivery and namespaced resources, including:
 
 ```text
-Traderoo Argo CD Application
+root applications Application
+Traderoo Argo CD Application spec
 deploy/k8s Traderoo manifests
-Traderoo namespace resources within platform-approved boundaries
 Traderoo ServiceAccounts
 Traderoo ConfigMaps
-Traderoo ExternalSecret resources that reference platform-provided Vault/ESO capability
+Traderoo ExternalSecret resources
 Traderoo workloads
 ```
 
@@ -70,6 +90,22 @@ Traderoo workloads
 The platform-services wrapper chart must not own the Traderoo application deployment.
 
 Traderoo application deployment remains application-owned and independently versioned in Traderoo manifests.
+
+Traderoo consumes Vault/ESO capabilities but does not install or manage Vault/ESO.
+
+### Dependency direction
+
+Dependency direction is one-way:
+
+```text
+platform root and platform services
+	-> provide shared capabilities
+	-> consumed by application root and Traderoo application specs
+```
+
+Application GitOps objects must not be rendered by the platform-services wrapper chart.
+
+This avoids cyclical ownership between platform and application reconciliation.
 
 ## Safety constraints
 
@@ -92,6 +128,7 @@ These constraints apply to both platform and application layers.
 * Ownership is explicit before Vault implementation work.
 * Platform capabilities can be reused safely by multiple applications.
 * Application deployment remains decoupled from platform bootstrap.
+* Separate platform and applications roots reduce ownership ambiguity.
 * AppProject and policy boundaries can enforce namespace and scope rules.
 * Secret management can evolve without embedding secrets in Git.
 
