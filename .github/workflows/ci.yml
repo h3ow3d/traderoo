@@ -261,8 +261,15 @@ jobs:
 
           prohibited='password:[[:space:]]|secret:[[:space:]]|api_key:[[:space:]]|token:[[:space:]]'
 
-          if grep -RInE "$prohibited" "${scan_paths[@]}"; then
+          # Allow GitHub Actions built-in token references while still blocking plaintext secrets.
+          allowed='password:[[:space:]]*\$\{\{[[:space:]]*github\.token[[:space:]]*\}\}|password:[[:space:]]*\$\{\{[[:space:]]*secrets\.GITHUB_TOKEN[[:space:]]*\}\}'
+
+          matches="$(grep -RInE "$prohibited" "${scan_paths[@]}" || true)"
+          filtered="$(printf '%s\n' "$matches" | grep -Ev "$allowed" || true)"
+
+          if [[ -n "$filtered" ]]; then
             echo "Found potential plaintext secret patterns in executable/config areas:"
+            printf '%s\n' "$filtered"
             exit 1
           fi
 
