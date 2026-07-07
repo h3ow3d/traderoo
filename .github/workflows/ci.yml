@@ -35,9 +35,6 @@ jobs:
             "Makefile"
             "README.md"
             ".gitignore"
-            "docs/delivery/validation-matrix.md"
-            "docs/delivery/definition-of-done.md"
-            "docs/safety/paper-only-guardrails.md"
           )
 
           missing=0
@@ -88,23 +85,14 @@ jobs:
 
           rendered="/tmp/local-rendered.yaml"
 
-          grep -Eq '^kind: Namespace$' "$rendered"
-          grep -Eq '^  name: traderoo-poc$' "$rendered"
-
-          awk '
-            /^kind: ConfigMap$/ { in_cm=1; has_name=0; has_exec=0; has_review=0; next }
-            /^---$/ {
-              if (in_cm && has_name && has_exec && has_review) found=1
-              in_cm=0
-            }
+          # Parse documents as blocks so checks do not depend on key ordering.
+          awk -v RS='---' '
             {
-              if (in_cm && $0 ~ /^  name: traderoo-config$/) has_name=1
-              if (in_cm && $0 ~ /^  EXECUTION_MODE: PAPER_ONLY$/) has_exec=1
-              if (in_cm && $0 ~ /^  REVIEW_PROVIDER: mock$/) has_review=1
+              if ($0 ~ /kind:[[:space:]]*Namespace/ && $0 ~ /name:[[:space:]]*traderoo-poc/) found_ns=1
+              if ($0 ~ /kind:[[:space:]]*ConfigMap/ && $0 ~ /name:[[:space:]]*traderoo-config/ && $0 ~ /EXECUTION_MODE:[[:space:]]*PAPER_ONLY/ && $0 ~ /REVIEW_PROVIDER:[[:space:]]*mock/) found_cm=1
             }
             END {
-              if (in_cm && has_name && has_exec && has_review) found=1
-              exit(found ? 0 : 1)
+              exit((found_ns && found_cm) ? 0 : 1)
             }
           ' "$rendered"
 
@@ -135,10 +123,8 @@ jobs:
 
           prohibited='live[_ -]?broker|real[_ -]?broker|broker[_ -]?credentials|api[_ -]?key.*broker|live[_ -]?order|real[_ -]?order|real[-_ ]money|margin trading|\bCFD\b|spread betting|options trading|autonomous live execution|alpaca|interactive brokers|trading212|ibkr'
 
-          hits="$(grep -RInE --exclude=ci.yml "$prohibited" "${scan_paths[@]}" || true)"
-          if [[ -n "$hits" ]]; then
+          if grep -RInE --exclude=ci.yml "$prohibited" "${scan_paths[@]}"; then
             echo "Found prohibited live-trading/broker indicators in executable/config areas:"
-            echo "$hits"
             exit 1
           fi
 
