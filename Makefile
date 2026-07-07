@@ -3,6 +3,7 @@ NAMESPACE ?= traderoo-poc
 CLUSTER_NAME ?= traderoo
 ARGOCD_NAMESPACE ?= argocd
 ARGOCD_APP_NAME ?= traderoo-poc
+IMAGE_NAME ?= traderoo:local
 K3D_CONFIG ?= platform/k3d/cluster.yaml
 K8S_POC_OVERLAY ?= applications/traderoo/k8s/overlays/poc
 ARGOCD_APP_MANIFEST ?= applications/traderoo/argocd/poc.yaml
@@ -10,11 +11,29 @@ PLATFORM_CHART ?= platform/charts/platform-services
 
 .PHONY: \
 	cluster-create cluster-delete cluster-status \
+	install run test docker-build kustomize-traderoo-poc validate \
 	argocd-install argocd-password argocd-port-forward argocd-status \
 	argocd-apply-app argocd-sync argocd-get argocd-delete-app \
 	validate-k8s-local \
 	helm-lint-platform helm-template-platform validate-platform-services \
-	platform-apply platform-status traderoo-apply traderoo-status bootstrap-local
+	platform-apply platform-status traderoo-image-import traderoo-apply traderoo-status bootstrap-local
+
+install:
+	python3 -m pip install -e app[dev]
+
+run:
+	uvicorn traderoo.main:app --host 0.0.0.0 --port 8000 --app-dir app
+
+test:
+	python3 -m pytest app/tests
+
+docker-build:
+	docker build -t $(IMAGE_NAME) app
+
+kustomize-traderoo-poc:
+	kubectl kustomize $(K8S_POC_OVERLAY)
+
+validate: test validate-platform-services kustomize-traderoo-poc
 
 cluster-create:
 	k3d cluster create --config $(K3D_CONFIG)
@@ -79,9 +98,12 @@ platform-status:
 traderoo-apply:
 	kubectl apply -f $(ARGOCD_APP_MANIFEST)
 
+traderoo-image-import:
+	k3d image import $(IMAGE_NAME) -c $(CLUSTER_NAME)
+
 traderoo-status:
 	kubectl get application $(ARGOCD_APP_NAME) -n $(ARGOCD_NAMESPACE)
 	kubectl get ns $(NAMESPACE)
 	kubectl get configmap $(APP_NAME)-config -n $(NAMESPACE)
 
-bootstrap-local: argocd-install platform-apply platform-status traderoo-apply traderoo-status
+bootstrap-local: argocd-install platform-apply platform-status traderoo-image-import traderoo-apply traderoo-status

@@ -258,7 +258,7 @@ Required MVP defaults:
 
 ```text id="bj9v8e"
 APP_NAME=traderoo
-ENVIRONMENT=local
+APP_ENV=poc
 EXECUTION_MODE=PAPER_ONLY
 REVIEW_PROVIDER=mock
 DEFAULT_BENCHMARK=SPY

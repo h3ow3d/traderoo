@@ -126,6 +126,14 @@ ruff format --check
 mypy, if type checking is configured
 ```
 
+Chunk 1 minimum expected checks:
+
+```text
+python dependency install
+pytest app/tests
+docker build of app image
+```
+
 If `mypy` is too noisy early, introduce it only once the project has stable typed models.
 
 ---
