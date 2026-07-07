@@ -89,6 +89,7 @@ This chunk should leave the project with an empty-but-working GitOps path.
 * Kubernetes manifest structure
 * Kustomize base and local overlay
 * Argo CD Application manifest
+* platform/application ownership boundary documentation
 * documentation skeleton
 * Makefile targets for cluster and Argo CD operations
 * placeholder namespace and ConfigMap
@@ -105,6 +106,9 @@ This chunk should leave the project with an empty-but-working GitOps path.
 * dashboard
 * GitHub Actions
 * container image build
+* platform-services wrapper chart implementation
+* Vault implementation
+* External Secrets Operator implementation
 
 ## Expected files
 
@@ -145,6 +149,7 @@ Makefile
 * `kubectl get configmap traderoo-config -n traderoo-poc` works.
 * Argo CD Application can be applied after replacing the placeholder repository URL.
 * Argo CD syncs the placeholder namespace and ConfigMap.
+* ADR `0006-separate-platform-services-from-application-gitops.md` documents platform versus application ownership boundaries.
 * No application code exists yet.
 
 ## Validation commands

@@ -65,6 +65,7 @@ pytest
 | Kubernetes manifests | Kustomize local overlay applies successfully                       |
 | Argo CD              | Argo CD installs and UI is reachable                               |
 | GitOps               | Argo CD Application can sync placeholder manifests                 |
+| Platform boundary    | ADR 0006 defines platform services vs application ownership        |
 | Safety               | No app code, database, trading logic, or OpenAI integration exists |
 
 ### Commands
@@ -79,6 +80,8 @@ kubectl get pods -n argocd
 make validate-k8s-local
 kubectl get ns traderoo-poc
 kubectl get configmap traderoo-config -n traderoo-poc -o yaml
+
+test -f docs/adr/0006-separate-platform-services-from-application-gitops.md
 ```
 
 ### Expected result
@@ -89,6 +92,7 @@ Argo CD is running.
 traderoo-poc namespace exists.
 traderoo-config ConfigMap exists.
 EXECUTION_MODE is PAPER_ONLY.
+Platform/application ownership boundary is documented in ADR 0006.
 ```
 
 ---

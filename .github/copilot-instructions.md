@@ -44,6 +44,7 @@ docs/adr/0002-gitops-with-argocd.md
 docs/adr/0003-paper-only-mvp.md
 docs/adr/0004-project-structure.md
 docs/adr/0005-in-cluster-vault-for-application-secrets.md
+docs/adr/0006-separate-platform-services-from-application-gitops.md
 ```
 
 If implementation instructions conflict with these documents, ask for clarification before coding.
@@ -145,6 +146,39 @@ Vault implementation is a future platform chunk.
 Do not add Vault Helm charts, Vault manifests, External Secrets Operator, Vault Agent Injector, or real Kubernetes Secret wiring unless explicitly requested by the current chunk.
 
 If a change requires a secret, add a configuration reference and documentation, not a real value.
+
+---
+
+## Platform/application ownership boundary
+
+Traderoo separates platform services from application consumers.
+
+Platform layer owns shared cluster capabilities:
+
+```text
+Argo CD installation/bootstrap
+platform-services wrapper chart
+Vault installation
+External Secrets Operator installation
+Argo CD AppProjects and deployment guardrails
+Vault auth method and policy boundaries
+```
+
+Application layer owns Traderoo runtime delivery:
+
+```text
+Traderoo Argo CD Application
+Traderoo Kubernetes manifests
+Traderoo namespace resources within platform-approved boundaries
+Traderoo ServiceAccounts
+Traderoo ConfigMaps
+Traderoo ExternalSecret resources referencing platform-provided Vault/ESO capability
+Traderoo workloads
+```
+
+The platform-services wrapper chart must not own the Traderoo application deployment.
+
+Vault does not permit broker credentials or live trading.
 
 ---
 
