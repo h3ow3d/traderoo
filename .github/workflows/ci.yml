@@ -1,0 +1,145 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  repo-checks:
+    name: repo-checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify required bootstrap structure
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          required_paths=(
+            "app/.gitkeep"
+            "scripts/.gitkeep"
+            "tests/.gitkeep"
+            "platform/k3d/cluster.yaml"
+            "platform/argocd/install.md"
+            "deploy/k8s/base/namespace.yaml"
+            "deploy/k8s/base/configmap.yaml"
+            "deploy/k8s/base/kustomization.yaml"
+            "deploy/k8s/overlays/local/kustomization.yaml"
+            "deploy/k8s/overlays/local/configmap-patch.yaml"
+            "deploy/argocd/traderoo-application.yaml"
+            "Makefile"
+            "README.md"
+            ".gitignore"
+            "docs/delivery/validation-matrix.md"
+            "docs/delivery/definition-of-done.md"
+            "docs/safety/paper-only-guardrails.md"
+          )
+
+          missing=0
+          for path in "${required_paths[@]}"; do
+            if [[ ! -e "$path" ]]; then
+              echo "Missing required path: $path"
+              missing=1
+            fi
+          done
+
+          if [[ "$missing" -ne 0 ]]; then
+            exit 1
+          fi
+
+          echo "Repository bootstrap structure check passed."
+
+  kubernetes-manifest-checks:
+    name: kubernetes-manifest-checks
+    runs-on: ubuntu-latest
+    needs: repo-checks
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+
+      - name: Render Kustomize base
+        shell: bash
+        run: |
+          set -euo pipefail
+          kubectl kustomize deploy/k8s/base > /tmp/base-rendered.yaml
+          test -s /tmp/base-rendered.yaml
+
+      - name: Render Kustomize local overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          kubectl kustomize deploy/k8s/overlays/local > /tmp/local-rendered.yaml
+          test -s /tmp/local-rendered.yaml
+
+      - name: Validate required rendered resources and safety defaults
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rendered="/tmp/local-rendered.yaml"
+
+          grep -Eq '^kind: Namespace$' "$rendered"
+          grep -Eq '^  name: traderoo-poc$' "$rendered"
+
+          awk '
+            /^kind: ConfigMap$/ { in_cm=1; has_name=0; has_exec=0; has_review=0; next }
+            /^---$/ {
+              if (in_cm && has_name && has_exec && has_review) found=1
+              in_cm=0
+            }
+            {
+              if (in_cm && $0 ~ /^  name: traderoo-config$/) has_name=1
+              if (in_cm && $0 ~ /^  EXECUTION_MODE: PAPER_ONLY$/) has_exec=1
+              if (in_cm && $0 ~ /^  REVIEW_PROVIDER: mock$/) has_review=1
+            }
+            END {
+              if (in_cm && has_name && has_exec && has_review) found=1
+              exit(found ? 0 : 1)
+            }
+          ' "$rendered"
+
+          echo "Kubernetes manifest checks passed."
+
+  paper-only-policy-checks:
+    name: paper-only-policy-checks
+    runs-on: ubuntu-latest
+    needs: repo-checks
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify no obvious live-trading/broker config in executable/config areas
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          scan_paths=(
+            "app"
+            "deploy"
+            "platform"
+            "scripts"
+            "tests"
+            ".github/workflows"
+            "Makefile"
+          )
+
+          prohibited='live[_ -]?broker|real[_ -]?broker|broker[_ -]?credentials|api[_ -]?key.*broker|live[_ -]?order|real[_ -]?order|real[-_ ]money|margin trading|\bCFD\b|spread betting|options trading|autonomous live execution|alpaca|interactive brokers|trading212|ibkr'
+
+          hits="$(grep -RInE --exclude=ci.yml "$prohibited" "${scan_paths[@]}" || true)"
+          if [[ -n "$hits" ]]; then
+            echo "Found prohibited live-trading/broker indicators in executable/config areas:"
+            echo "$hits"
+            exit 1
+          fi
+
+          echo "Paper-only policy scan passed."
