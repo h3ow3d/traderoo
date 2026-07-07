@@ -27,7 +27,7 @@ This chunk includes:
 - endpoints: `/healthz`, `/readyz`, `/`
 - strict `EXECUTION_MODE=PAPER_ONLY` guardrail in configuration
 - unit tests for runtime endpoints and configuration defaults
-- Dockerfile for local image build (`traderoo:local`)
+- Dockerfile for image build and GHCR publication (`ghcr.io/h3ow3d/traderoo:latest`)
 - application-owned Kubernetes `Deployment` and `Service`
 - probes on `/healthz` and `/readyz`
 - Makefile and CI updates for runtime validation
@@ -86,7 +86,18 @@ make validate-k8s-local
 make kustomize-traderoo-poc
 ```
 
-Build and import runtime image before applying Traderoo app in-cluster:
+Preferred runtime image path for POC:
+
+```bash
+make image-name
+# expected: ghcr.io/h3ow3d/traderoo:latest
+```
+
+The Traderoo Deployment pulls from GHCR with `imagePullPolicy: Always`.
+No GHCR credentials are committed in this repository.
+Private GHCR pull support is deferred until platform-managed secret delivery is implemented.
+
+Optional local fallback for offline development:
 
 ```bash
 make docker-build

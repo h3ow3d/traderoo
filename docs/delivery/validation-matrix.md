@@ -138,12 +138,24 @@ Kubernetes:
 
 ```bash id="900s7b"
 make docker-build
-make traderoo-image-import
 make traderoo-apply
 kubectl port-forward -n traderoo-poc svc/traderoo 8000:8000
 curl http://localhost:8000/healthz
 curl http://localhost:8000/readyz
 curl http://localhost:8000/
+```
+
+Preferred image reference for the POC deployment:
+
+```text
+ghcr.io/h3ow3d/traderoo:latest
+```
+
+Optional local fallback when GHCR pull is unavailable:
+
+```bash
+make docker-build
+make traderoo-image-import
 ```
 
 ### Expected result

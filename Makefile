@@ -3,7 +3,10 @@ NAMESPACE ?= traderoo-poc
 CLUSTER_NAME ?= traderoo
 ARGOCD_NAMESPACE ?= argocd
 ARGOCD_APP_NAME ?= traderoo-poc
-IMAGE_NAME ?= traderoo:local
+GHCR_OWNER ?= h3ow3d
+GHCR_IMAGE ?= ghcr.io/$(GHCR_OWNER)/traderoo:latest
+LOCAL_IMAGE ?= traderoo:local
+IMAGE_NAME ?= $(GHCR_IMAGE)
 K3D_CONFIG ?= platform/k3d/cluster.yaml
 K8S_POC_OVERLAY ?= applications/traderoo/k8s/overlays/poc
 ARGOCD_APP_MANIFEST ?= applications/traderoo/argocd/poc.yaml
@@ -11,7 +14,7 @@ PLATFORM_CHART ?= platform/charts/platform-services
 
 .PHONY: \
 	cluster-create cluster-delete cluster-status \
-	install run test docker-build kustomize-traderoo-poc validate \
+	install run test docker-build docker-run image-name validate-image-ref kustomize-traderoo-poc validate \
 	argocd-install argocd-password argocd-port-forward argocd-status \
 	argocd-apply-app argocd-sync argocd-get argocd-delete-app \
 	validate-k8s-local \
@@ -28,7 +31,16 @@ test:
 	python3 -m pytest app/tests
 
 docker-build:
-	docker build -t $(IMAGE_NAME) app
+	docker build -t $(LOCAL_IMAGE) -t $(IMAGE_NAME) app
+
+docker-run:
+	docker run --rm -p 8000:8000 $(LOCAL_IMAGE)
+
+image-name:
+	@echo $(IMAGE_NAME)
+
+validate-image-ref:
+	@echo "$(IMAGE_NAME)" | grep -E '^ghcr\.io/[^/]+/traderoo:latest$$'
 
 kustomize-traderoo-poc:
 	kubectl kustomize $(K8S_POC_OVERLAY)
@@ -99,11 +111,11 @@ traderoo-apply:
 	kubectl apply -f $(ARGOCD_APP_MANIFEST)
 
 traderoo-image-import:
-	k3d image import $(IMAGE_NAME) -c $(CLUSTER_NAME)
+	k3d image import $(LOCAL_IMAGE) -c $(CLUSTER_NAME)
 
 traderoo-status:
 	kubectl get application $(ARGOCD_APP_NAME) -n $(ARGOCD_NAMESPACE)
 	kubectl get ns $(NAMESPACE)
 	kubectl get configmap $(APP_NAME)-config -n $(NAMESPACE)
 
-bootstrap-local: argocd-install platform-apply platform-status traderoo-image-import traderoo-apply traderoo-status
+bootstrap-local: argocd-install platform-apply platform-status traderoo-apply traderoo-status
