@@ -28,6 +28,11 @@ jobs:
             "platform/bootstrap/argocd/install.md"
             "platform/bootstrap/argocd/root-platform-application.yaml"
             "platform/bootstrap/argocd/root-applications-application.yaml"
+            "platform/charts/platform-services/Chart.yaml"
+            "platform/charts/platform-services/values.yaml"
+            "platform/charts/platform-services/templates/README.md"
+            "platform/charts/platform-services/templates/appproject-platform.yaml"
+            "platform/charts/platform-services/templates/appproject-applications.yaml"
             "applications/traderoo/k8s/base/namespace.yaml"
             "applications/traderoo/k8s/base/configmap.yaml"
             "applications/traderoo/k8s/base/kustomization.yaml"
@@ -65,6 +70,24 @@ jobs:
         uses: azure/setup-kubectl@v4
         with:
           version: v1.31.0
+
+      - name: Setup helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.1
+
+      - name: Lint platform-services chart
+        shell: bash
+        run: |
+          set -euo pipefail
+          helm lint platform/charts/platform-services
+
+      - name: Template platform-services chart
+        shell: bash
+        run: |
+          set -euo pipefail
+          helm template platform-services platform/charts/platform-services --dry-run=client | tee /tmp/platform-services.yaml >/dev/null
+          grep -E "kind: AppProject|name: platform|name: applications" /tmp/platform-services.yaml
 
       - name: Render Kustomize base
         shell: bash

@@ -6,12 +6,14 @@ ARGOCD_APP_NAME ?= traderoo
 K3D_CONFIG ?= platform/k3d/cluster.yaml
 K8S_LOCAL_OVERLAY ?= applications/traderoo/k8s/overlays/local
 ARGOCD_APP_MANIFEST ?= applications/traderoo/argocd/application.yaml
+PLATFORM_CHART ?= platform/charts/platform-services
 
 .PHONY: \
 	cluster-create cluster-delete cluster-status \
 	argocd-install argocd-password argocd-port-forward argocd-status \
 	argocd-apply-app argocd-sync argocd-get argocd-delete-app \
-	validate-k8s-local
+	validate-k8s-local \
+	helm-lint-platform helm-template-platform validate-platform-services
 
 cluster-create:
 	k3d cluster create --config $(K3D_CONFIG)
@@ -52,3 +54,12 @@ validate-k8s-local:
 	kubectl apply -k $(K8S_LOCAL_OVERLAY)
 	kubectl get ns $(NAMESPACE)
 	kubectl get configmap $(APP_NAME)-config -n $(NAMESPACE)
+
+helm-lint-platform:
+	helm lint $(PLATFORM_CHART)
+
+helm-template-platform:
+	helm template platform-services $(PLATFORM_CHART) --dry-run=client | tee /tmp/platform-services.yaml >/dev/null
+
+validate-platform-services: helm-lint-platform helm-template-platform
+	grep -E "kind: AppProject|name: platform|name: applications" /tmp/platform-services.yaml

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: platform-services
+description: Platform-owned Argo CD guardrail resources for Traderoo.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
