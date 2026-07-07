@@ -346,9 +346,9 @@ GitHub
   → traderoo-poc namespace
 ```
 
-The `deploy/k8s` directory contains Kubernetes manifests.
+The `applications/traderoo/k8s` directory contains Kubernetes manifests.
 
-The `deploy/argocd` directory contains the Argo CD Application manifest.
+The `applications/traderoo/argocd` directory contains the Argo CD Application manifest.
 
 The `platform/k3d` directory contains local cluster configuration.
 

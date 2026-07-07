@@ -4,8 +4,8 @@ CLUSTER_NAME ?= traderoo
 ARGOCD_NAMESPACE ?= argocd
 ARGOCD_APP_NAME ?= traderoo
 K3D_CONFIG ?= platform/k3d/cluster.yaml
-K8S_LOCAL_OVERLAY ?= deploy/k8s/overlays/local
-ARGOCD_APP_MANIFEST ?= deploy/argocd/traderoo-application.yaml
+K8S_LOCAL_OVERLAY ?= applications/traderoo/k8s/overlays/local
+ARGOCD_APP_MANIFEST ?= applications/traderoo/argocd/application.yaml
 
 .PHONY: \
 	cluster-create cluster-delete cluster-status \

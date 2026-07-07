@@ -300,7 +300,7 @@ The expected repository structure is:
 ```text
 traderoo/
 ├── app/
-├── deploy/
+├── applications/
 ├── platform/
 ├── docs/
 ├── scripts/
@@ -606,9 +606,10 @@ Use the project deployment structure:
 
 ```text
 platform/k3d/
-deploy/argocd/
-deploy/k8s/base/
-deploy/k8s/overlays/local/
+platform/bootstrap/argocd/
+applications/traderoo/argocd/
+applications/traderoo/k8s/base/
+applications/traderoo/k8s/overlays/local/
 ```
 
 The default namespace is:

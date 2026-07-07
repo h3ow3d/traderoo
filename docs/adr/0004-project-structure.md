@@ -47,7 +47,7 @@ Use the following top-level repository structure:
 ```text
 traderoo/
 ├── app/
-├── deploy/
+├── applications/
 ├── platform/
 ├── docs/
 ├── scripts/
@@ -92,27 +92,28 @@ Application responsibilities will include:
 * watchers
 * outcome evaluation
 
-### `deploy/`
+### `applications/`
 
-Contains Kubernetes deployment configuration for Traderoo.
+Contains application-owned GitOps configuration for Traderoo.
 
-This directory represents the desired runtime state that Argo CD will sync into the local Kubernetes cluster.
+This directory represents application runtime state that Argo CD will sync into the local Kubernetes cluster.
 
 Structure:
 
 ```text
-deploy/
-├── argocd/
-│   └── traderoo-application.yaml
-└── k8s/
-    ├── base/
-    │   ├── namespace.yaml
-    │   ├── configmap.yaml
-    │   └── kustomization.yaml
-    └── overlays/
-        └── local/
-            ├── kustomization.yaml
-            └── configmap-patch.yaml
+applications/
+└── traderoo/
+    ├── argocd/
+    │   └── application.yaml
+    └── k8s/
+        ├── base/
+        │   ├── namespace.yaml
+        │   ├── configmap.yaml
+        │   └── kustomization.yaml
+        └── overlays/
+            └── local/
+                ├── kustomization.yaml
+                └── configmap-patch.yaml
 ```
 
 The `base/` directory contains reusable Kubernetes manifests.
@@ -131,8 +132,11 @@ Structure:
 platform/
 ├── k3d/
 │   └── cluster.yaml
-└── argocd/
-    └── install.md
+└── bootstrap/
+    └── argocd/
+        ├── install.md
+        ├── root-platform-application.yaml
+        └── root-applications-application.yaml
 ```
 
 This is where local Kubernetes and Argo CD bootstrap material lives.
@@ -140,7 +144,7 @@ This is where local Kubernetes and Argo CD bootstrap material lives.
 The distinction is:
 
 * `platform/` creates or documents the local platform.
-* `deploy/` deploys Traderoo onto that platform.
+* `applications/` deploys Traderoo onto that platform.
 
 ### `docs/`
 
@@ -300,7 +304,7 @@ This allows the project to remain understandable while still supporting later ex
 
 ### 3. GitOps from the beginning
 
-Kubernetes manifests live under `deploy/`.
+Kubernetes manifests live under `applications/`.
 
 Argo CD syncs from GitHub into the local Kubernetes cluster.
 

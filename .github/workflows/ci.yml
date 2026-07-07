@@ -25,13 +25,15 @@ jobs:
             "scripts/.gitkeep"
             "tests/.gitkeep"
             "platform/k3d/cluster.yaml"
-            "platform/argocd/install.md"
-            "deploy/k8s/base/namespace.yaml"
-            "deploy/k8s/base/configmap.yaml"
-            "deploy/k8s/base/kustomization.yaml"
-            "deploy/k8s/overlays/local/kustomization.yaml"
-            "deploy/k8s/overlays/local/configmap-patch.yaml"
-            "deploy/argocd/traderoo-application.yaml"
+            "platform/bootstrap/argocd/install.md"
+            "platform/bootstrap/argocd/root-platform-application.yaml"
+            "platform/bootstrap/argocd/root-applications-application.yaml"
+            "applications/traderoo/k8s/base/namespace.yaml"
+            "applications/traderoo/k8s/base/configmap.yaml"
+            "applications/traderoo/k8s/base/kustomization.yaml"
+            "applications/traderoo/k8s/overlays/local/kustomization.yaml"
+            "applications/traderoo/k8s/overlays/local/configmap-patch.yaml"
+            "applications/traderoo/argocd/application.yaml"
             "Makefile"
             "README.md"
             ".gitignore"
@@ -68,14 +70,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          kubectl kustomize deploy/k8s/base > /tmp/base-rendered.yaml
+          kubectl kustomize applications/traderoo/k8s/base > /tmp/base-rendered.yaml
           test -s /tmp/base-rendered.yaml
 
       - name: Render Kustomize local overlay
         shell: bash
         run: |
           set -euo pipefail
-          kubectl kustomize deploy/k8s/overlays/local > /tmp/local-rendered.yaml
+          kubectl kustomize applications/traderoo/k8s/overlays/local > /tmp/local-rendered.yaml
           test -s /tmp/local-rendered.yaml
 
       - name: Validate required rendered resources and safety defaults
@@ -113,7 +115,7 @@ jobs:
 
           scan_paths=(
             "app"
-            "deploy"
+            "applications"
             "platform"
             "scripts"
             "tests"

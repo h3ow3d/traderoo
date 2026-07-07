@@ -149,8 +149,8 @@ CI should not apply manifests to a real cluster unless explicitly added later.
 Expected validation command shape:
 
 ```bash
-kubectl kustomize deploy/k8s/base
-kubectl kustomize deploy/k8s/overlays/local
+kubectl kustomize applications/traderoo/k8s/base
+kubectl kustomize applications/traderoo/k8s/overlays/local
 ```
 
 ---
@@ -180,7 +180,7 @@ Apply safety scanning mainly to:
 
 ```text
 app/
-deploy/
+applications/
 platform/
 scripts/
 tests/
