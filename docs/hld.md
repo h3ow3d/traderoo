@@ -299,6 +299,37 @@ Outcome evaluator
 Dashboard and feedback memory
 ```
 
+### 6.1 Platform/application ownership separation
+
+Traderoo separates shared platform services from application consumers.
+
+Platform services are shared cluster capabilities and own:
+
+* Argo CD installation/bootstrap
+* platform-services wrapper chart ownership
+* Vault installation
+* External Secrets Operator installation
+* AppProject guardrails and deployment boundaries
+* Vault auth method and policy boundaries
+
+Traderoo application is a consumer and owns:
+
+* Traderoo Argo CD Application
+* Traderoo Kubernetes manifests
+* Traderoo namespace-scoped resources within platform-approved boundaries
+* Traderoo ServiceAccounts
+* Traderoo ConfigMaps
+* Traderoo ExternalSecret resources referencing platform-provided capabilities
+* Traderoo workloads
+
+The platform-services wrapper chart must not own Traderoo workload deployment.
+
+This separation does not weaken safety constraints:
+
+* `PAPER_ONLY` remains mandatory.
+* Vault does not permit broker credentials or live trading credentials.
+* Real secrets must not be committed to Git.
+
 ---
 
 ## 7. Subsystem overview
