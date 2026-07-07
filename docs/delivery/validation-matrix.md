@@ -62,6 +62,7 @@ pytest
 | -------------------- | ------------------------------------------------------------------ |
 | Repository structure | Required folders and docs exist                                    |
 | k3d cluster          | Cluster can be created from `platform/k3d/cluster.yaml`            |
+| Platform chart       | `platform-services` Helm chart lints and templates                 |
 | Kubernetes manifests | Kustomize local overlay applies successfully                       |
 | Argo CD              | Argo CD installs and UI is reachable                               |
 | GitOps               | Argo CD Application can sync placeholder manifests                 |
@@ -77,6 +78,10 @@ kubectl get nodes
 make argocd-install
 kubectl get pods -n argocd
 
+helm lint platform/charts/platform-services
+helm template platform-services platform/charts/platform-services --dry-run=client > /tmp/platform-services.yaml
+grep -E "kind: AppProject|name: platform|name: applications" /tmp/platform-services.yaml
+
 make validate-k8s-local
 kubectl get ns traderoo-poc
 kubectl get configmap traderoo-config -n traderoo-poc -o yaml
@@ -89,6 +94,7 @@ test -f docs/adr/0006-separate-platform-services-from-application-gitops.md
 ```text id="wv2uum"
 Local k3d cluster exists.
 Argo CD is running.
+Platform chart renders AppProjects for platform and applications.
 traderoo-poc namespace exists.
 traderoo-config ConfigMap exists.
 EXECUTION_MODE is PAPER_ONLY.

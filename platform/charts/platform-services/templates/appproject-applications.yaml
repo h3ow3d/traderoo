@@ -1,0 +1,17 @@
+{{- if .Values.projects.applications.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ .Values.projects.applications.name }}
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    {{- include "platform-services.labels" . | nindent 4 }}
+spec:
+  description: {{ .Values.projects.applications.description | quote }}
+  sourceRepos:
+    {{- toYaml .Values.projects.applications.sourceRepos | nindent 4 }}
+  destinations:
+    {{- toYaml .Values.projects.applications.destinations | nindent 4 }}
+  clusterResourceWhitelist:
+    {{- toYaml .Values.projects.applications.clusterResourceWhitelist | nindent 4 }}
+{{- end }}

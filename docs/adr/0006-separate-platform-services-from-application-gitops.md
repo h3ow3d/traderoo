@@ -146,7 +146,6 @@ This ADR does not implement:
 Vault manifests
 Vault Helm chart values
 External Secrets Operator manifests
-platform-services Helm chart skeleton
 Argo CD Application templates
 application code
 trading logic

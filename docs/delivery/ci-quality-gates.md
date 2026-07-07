@@ -135,6 +135,8 @@ If `mypy` is too noisy early, introduce it only once the project has stable type
 For Kubernetes manifests, CI should validate:
 
 ```text
+platform-services chart lint succeeds
+platform-services chart templates to AppProject resources
 Kustomize base renders
 Kustomize local overlay renders
 required namespace exists in rendered output
@@ -149,6 +151,8 @@ CI should not apply manifests to a real cluster unless explicitly added later.
 Expected validation command shape:
 
 ```bash
+helm lint platform/charts/platform-services
+helm template platform-services platform/charts/platform-services --dry-run=client
 kubectl kustomize applications/traderoo/k8s/base
 kubectl kustomize applications/traderoo/k8s/overlays/local
 ```
@@ -241,7 +245,7 @@ Required checks should include the stable CI job names.
 
 | Chunk | CI expectation                                                       |
 | ----- | -------------------------------------------------------------------- |
-| 0     | Repo, docs, Kubernetes manifest, Kustomize, paper-only policy checks |
+| 0     | Repo, docs, platform chart, Kubernetes manifest, Kustomize, paper-only policy checks |
 | 1     | Add Python install, FastAPI health tests, lint/format checks         |
 | 2     | Add database model tests and migration/init checks                   |
 | 3     | Add ingestion tests with mocked provider                             |

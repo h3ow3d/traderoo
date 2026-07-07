@@ -9,7 +9,9 @@ spec:
     # Replace this placeholder with your actual GitHub repository URL.
     repoURL: https://github.com/REPLACE_ME/traderoo.git
     targetRevision: HEAD
-    path: platform
+    path: platform/charts/platform-services
+    helm:
+      releaseName: platform-services
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd

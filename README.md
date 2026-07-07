@@ -27,6 +27,7 @@ This chunk includes:
 - local k3d cluster definition
 - Argo CD install guide
 - separate platform bootstrap and application ownership layout
+- platform-services Helm wrapper chart skeleton for AppProjects
 - Kustomize base and local overlay placeholder manifests
 - Argo CD Application manifest
 - Makefile operator commands
@@ -83,8 +84,15 @@ make argocd-apply-app
 Path ownership model:
 
 - Platform bootstrap: `platform/bootstrap/argocd/`
+- Platform services chart: `platform/charts/platform-services/`
 - Traderoo application Argo CD spec: `applications/traderoo/argocd/application.yaml`
 - Traderoo manifests: `applications/traderoo/k8s/`
+
+Validate the platform chart locally:
+
+```bash
+make validate-platform-services
+```
 
 Optional Argo CD CLI commands:
 
