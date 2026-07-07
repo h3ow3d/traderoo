@@ -32,8 +32,10 @@ docs/product/subsystem-map.md
 docs/delivery/chunk-plan.md
 docs/delivery/validation-matrix.md
 docs/delivery/definition-of-done.md
+docs/delivery/ci-quality-gates.md
 docs/safety/paper-only-guardrails.md
 docs/safety/ai-boundaries.md
+docs/safety/secrets-management.md
 docs/c4/01-system-context.md
 docs/c4/02-container-view.md
 docs/c4/03-component-view.md
@@ -41,6 +43,7 @@ docs/adr/0001-local-kubernetes-with-k3d.md
 docs/adr/0002-gitops-with-argocd.md
 docs/adr/0003-paper-only-mvp.md
 docs/adr/0004-project-structure.md
+docs/adr/0005-in-cluster-vault-for-application-secrets.md
 ```
 
 If implementation instructions conflict with these documents, ask for clarification before coding.
@@ -78,6 +81,70 @@ Do not create code that can place real orders.
 Do not create broker API configuration.
 
 Do not add a live broker adapter.
+
+Vault does not weaken this boundary.
+
+Even if Vault exists, broker credentials remain prohibited during the MVP.
+
+---
+
+## Secrets management rule
+
+Traderoo must not commit real secrets to Git.
+
+Traderoo will use in-cluster Vault as the intended runtime secret store for application secrets.
+
+Required secrets-management documents:
+
+```text
+docs/safety/secrets-management.md
+docs/adr/0005-in-cluster-vault-for-application-secrets.md
+```
+
+Do not add:
+
+```text
+plaintext API keys
+plaintext passwords
+plaintext tokens
+plaintext private keys
+real OpenAI API keys
+real database passwords
+Vault root tokens
+Vault unseal keys
+broker credentials
+live trading credentials
+Kubernetes Secrets containing real values
+.env files containing real values
+```
+
+Allowed:
+
+```text
+placeholder values
+fake example values
+environment variable names
+Vault secret path references
+ExternalSecret definitions without secret material
+documentation examples with fake values
+```
+
+Acceptable fake values include:
+
+```text
+changeme
+replace-me
+dummy
+example
+not-a-real-secret
+fake-token
+```
+
+Vault implementation is a future platform chunk.
+
+Do not add Vault Helm charts, Vault manifests, External Secrets Operator, Vault Agent Injector, or real Kubernetes Secret wiring unless explicitly requested by the current chunk.
+
+If a change requires a secret, add a configuration reference and documentation, not a real value.
 
 ---
 
@@ -143,7 +210,7 @@ premature microservices
 Kafka/NATS/event streaming
 service mesh
 complex auth
-production secret management
+over-complex production secret management before the agreed Vault platform chunk
 frontend framework complexity
 live broker integration
 ```
@@ -271,6 +338,20 @@ docs/delivery/validation-matrix.md
 docs/delivery/definition-of-done.md
 ```
 
+GitHub Actions workflows must live under:
+
+```text
+.github/workflows/
+```
+
+Do not create root-level workflow files such as:
+
+```text
+ci.yml
+```
+
+unless they are documentation examples only.
+
 For any code change, ensure CI covers the relevant validation.
 
 Expected CI direction:
@@ -282,6 +363,7 @@ tests must be runnable locally and in CI
 quality checks must be deterministic
 paper-only safety checks must remain present
 Kubernetes manifests must be validated where relevant
+secret-leakage checks must remain present
 ```
 
 Do not remove, weaken, or bypass CI checks without explicit approval.
@@ -291,6 +373,14 @@ If a chunk adds Python code, update CI to run Python quality and tests.
 If a chunk adds Kubernetes manifests, update CI to validate manifests.
 
 If a chunk adds safety-sensitive execution logic, update CI to test PAPER_ONLY guardrails.
+
+If a chunk changes secrets handling, update CI to preserve or improve secret-leakage checks.
+
+For Kubernetes validation, CI should render manifests with Kustomize but must not assume access to the user’s local k3d cluster.
+
+CI must not deploy to the user’s local machine.
+
+CI must not require real OpenAI credentials, broker credentials, or Vault bootstrap material.
 
 A chunk is not done if the CI workflow is broken, missing relevant checks, or no longer reflects the project structure.
 
@@ -439,6 +529,30 @@ Do not silently ignore invalid configuration.
 
 ---
 
+## Dependency rules
+
+Keep dependencies minimal, intentional, and documented.
+
+Do not add dependencies casually.
+
+If a chunk adds a dependency, explain:
+
+```text
+why it is needed
+where it is used
+whether it is runtime, development, or test-only
+how it is pinned
+how it is covered by CI
+```
+
+Prefer boring, well-maintained libraries.
+
+Do not add frontend frameworks during the MVP unless explicitly requested.
+
+Do not add trading, broker, or exchange SDKs during the MVP.
+
+---
+
 ## Kubernetes rules
 
 Use the project deployment structure:
@@ -471,6 +585,40 @@ REVIEW_PROVIDER=mock
 
 Do not add broker secrets.
 
+Do not add Kubernetes Secrets containing real values.
+
+When running local Kubernetes commands, only use the local k3d cluster named:
+
+```text
+traderoo
+```
+
+and the namespace:
+
+```text
+traderoo-poc
+```
+
+unless explicitly instructed otherwise.
+
+Before running destructive commands, explain the command and request approval.
+
+Destructive commands include:
+
+```text
+kubectl delete
+k3d cluster delete
+helm uninstall
+kubectl patch
+kubectl replace --force
+kubectl apply --prune
+kubectl rollout restart
+commands that modify secrets
+commands that switch Kubernetes context
+```
+
+Never run Kubernetes commands against an unknown or non-local context without explicit confirmation.
+
 ---
 
 ## Testing expectations
@@ -491,9 +639,71 @@ risk gate blocking test
 paper execution safety test
 watcher transition test
 outcome calculation test
+secret handling test
 ```
 
 Safety tests are mandatory for execution-related changes.
+
+Secret-handling tests are mandatory for changes that introduce or consume secrets.
+
+---
+
+## Branch and PR workflow
+
+When using VS Code Copilot Agent mode for implementation work, follow this workflow unless instructed otherwise:
+
+```text
+1. Check current branch and working tree state.
+2. Create a feature branch for the requested chunk.
+3. Implement only the requested chunk.
+4. Run local tests and validation commands.
+5. Run local Kubernetes validation only when relevant.
+6. Commit the change.
+7. Push the branch.
+8. Create a draft pull request with GitHub CLI.
+9. Include validation evidence in the PR body.
+10. Stop after creating the draft PR.
+```
+
+Branch names should be short and chunk-oriented, for example:
+
+```text
+chunk-0-bootstrap
+chunk-1-fastapi-skeleton
+platform-ci-quality-gates
+docs-secrets-management
+```
+
+Do not merge automatically.
+
+Do not mark a PR ready until validation has passed.
+
+Do not bypass GitHub review or CI.
+
+---
+
+## Pull request evidence
+
+Each PR should include:
+
+```text
+chunk or task implemented
+files changed
+validation commands run
+expected outputs observed
+tests added or updated
+CI checks expected to pass
+known limitations
+confirmation that PAPER_ONLY guardrails remain intact
+confirmation that no real secrets were committed
+confirmation that no broker credentials were added
+```
+
+If the PR changes Kubernetes manifests, include Kustomize validation evidence.
+
+If the PR changes Python code, include test and quality-check evidence.
+
+If the PR changes secret handling, include secret-safety validation evidence.
 
 ---
 
@@ -504,10 +714,35 @@ When asked to implement a chunk:
 1. Read the relevant docs.
 2. Restate the chunk scope briefly.
 3. Identify out-of-scope items.
-4. Implement the smallest working change.
-5. Add tests.
-6. Update docs only where needed.
-7. Provide validation commands and expected outputs.
-8. Do not continue to the next chunk.
+4. Check the current branch and working tree.
+5. Create or use the agreed feature branch.
+6. Implement the smallest working change.
+7. Add tests.
+8. Update docs only where needed.
+9. Update CI where needed.
+10. Provide validation commands and expected outputs.
+11. Create a draft PR if requested.
+12. Do not continue to the next chunk.
 
 When unsure, ask before widening scope.
+
+---
+
+## Stop conditions
+
+Stop and ask for clarification if a requested change would:
+
+```text
+introduce live trading
+introduce broker credentials
+introduce real-money execution
+weaken PAPER_ONLY guardrails
+commit real secrets
+add Vault implementation outside an approved platform chunk
+weaken or remove CI checks
+change the repository structure significantly
+implement future chunks early
+require destructive local Kubernetes commands
+```
+
+Do not work around these constraints silently.
