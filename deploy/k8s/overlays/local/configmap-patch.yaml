@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traderoo-config
+  namespace: traderoo-poc
+data:
+  ENVIRONMENT: local

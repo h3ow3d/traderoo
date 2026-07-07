@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: traderoo-poc
+  labels:
+    app.kubernetes.io/name: traderoo
+    app.kubernetes.io/part-of: traderoo

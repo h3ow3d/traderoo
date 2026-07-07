@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traderoo-config
+  namespace: traderoo-poc
+data:
+  APP_NAME: traderoo
+  EXECUTION_MODE: PAPER_ONLY
+  REVIEW_PROVIDER: mock
+  ENVIRONMENT: base
