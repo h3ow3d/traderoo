@@ -29,3 +29,12 @@ kubectl -n argocd port-forward svc/argocd-server 8081:443
 ```
 
 Open: https://localhost:8081
+
+## Root Applications
+
+Apply once after Argo CD installation:
+
+```bash
+kubectl apply -f platform/bootstrap/argocd/root-platform-application.yaml
+kubectl apply -f platform/bootstrap/argocd/root-applications-application.yaml
+```

@@ -78,7 +78,7 @@ The application layer owns Traderoo runtime delivery and namespaced resources, i
 ```text
 root applications Application
 Traderoo Argo CD Application spec
-deploy/k8s Traderoo manifests
+applications/traderoo/k8s Traderoo manifests
 Traderoo ServiceAccounts
 Traderoo ConfigMaps
 Traderoo ExternalSecret resources

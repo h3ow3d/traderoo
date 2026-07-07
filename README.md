@@ -26,6 +26,7 @@ This chunk includes:
 - repository skeleton folders
 - local k3d cluster definition
 - Argo CD install guide
+- separate platform bootstrap and application ownership layout
 - Kustomize base and local overlay placeholder manifests
 - Argo CD Application manifest
 - Makefile operator commands
@@ -78,6 +79,12 @@ Apply Argo CD application after replacing the repository URL placeholder:
 ```bash
 make argocd-apply-app
 ```
+
+Path ownership model:
+
+- Platform bootstrap: `platform/bootstrap/argocd/`
+- Traderoo application Argo CD spec: `applications/traderoo/argocd/application.yaml`
+- Traderoo manifests: `applications/traderoo/k8s/`
 
 Optional Argo CD CLI commands:
 

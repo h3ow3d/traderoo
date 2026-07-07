@@ -827,13 +827,13 @@ platform/
 ### Kubernetes manifests
 
 ```text
-deploy/k8s/
+applications/traderoo/k8s/
 ```
 
 ### Argo CD application manifest
 
 ```text
-deploy/argocd/traderoo-application.yaml
+applications/traderoo/argocd/application.yaml
 ```
 
 The deployment model is:
@@ -861,7 +861,7 @@ Traderoo uses the following top-level structure:
 ```text
 traderoo/
 ├── app/
-├── deploy/
+├── applications/
 ├── platform/
 ├── docs/
 ├── scripts/
@@ -875,9 +875,9 @@ traderoo/
 
 Application code.
 
-### `deploy/`
+### `applications/`
 
-Kubernetes manifests and Argo CD application definitions.
+Application-owned GitOps definitions and Kubernetes manifests.
 
 ### `platform/`
 

@@ -293,7 +293,7 @@ Argo CD sync status where relevant
 Example:
 
 ```bash id="8e7jgc"
-kubectl apply -k deploy/k8s/overlays/local
+kubectl apply -k applications/traderoo/k8s/overlays/local
 kubectl get pods -n traderoo-poc
 kubectl get configmap traderoo-config -n traderoo-poc -o yaml
 ```

@@ -38,13 +38,13 @@ argocd
 Traderoo application manifests will live under:
 
 ```text
-deploy/k8s
+applications/traderoo/k8s
 ```
 
 Argo CD application manifests will live under:
 
 ```text
-deploy/argocd
+applications/traderoo/argocd
 ```
 
 The initial Argo CD Application will be named:
@@ -56,7 +56,7 @@ traderoo
 It will sync the local overlay:
 
 ```text
-deploy/k8s/overlays/local
+applications/traderoo/k8s/overlays/local
 ```
 
 The initial sync policy may use:
