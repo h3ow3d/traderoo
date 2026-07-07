@@ -258,6 +258,44 @@ what remains for the next chunk
 
 ---
 
+## CI and quality gate rule
+
+Every implementation chunk must maintain or improve CI.
+
+Before completing a chunk, check:
+
+```text
+.github/workflows/
+docs/delivery/ci-quality-gates.md
+docs/delivery/validation-matrix.md
+docs/delivery/definition-of-done.md
+```
+
+For any code change, ensure CI covers the relevant validation.
+
+Expected CI direction:
+
+```text
+pull_request checks must run before merge
+push checks should run on main
+tests must be runnable locally and in CI
+quality checks must be deterministic
+paper-only safety checks must remain present
+Kubernetes manifests must be validated where relevant
+```
+
+Do not remove, weaken, or bypass CI checks without explicit approval.
+
+If a chunk adds Python code, update CI to run Python quality and tests.
+
+If a chunk adds Kubernetes manifests, update CI to validate manifests.
+
+If a chunk adds safety-sensitive execution logic, update CI to test PAPER_ONLY guardrails.
+
+A chunk is not done if the CI workflow is broken, missing relevant checks, or no longer reflects the project structure.
+
+---
+
 ## Domain lifecycle
 
 The core lifecycle artefacts are:
