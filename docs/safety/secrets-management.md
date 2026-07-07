@@ -184,6 +184,28 @@ If OpenAI integration is introduced later, local development should support a do
 
 ---
 
+## 7.1 Container registry policy (current POC)
+
+Traderoo POC currently expects the runtime image to be pulled from:
+
+```text
+ghcr.io/h3ow3d/traderoo:latest
+```
+
+Current assumption:
+
+```text
+image is public
+no imagePullSecret committed
+no k3d registry credentials committed
+```
+
+Do not commit GHCR credentials, personal access tokens, or dockerconfigjson payloads.
+
+If GHCR image pulls become private in a future chunk, support must be added through the approved platform secret-delivery model. That private-pull support is deferred.
+
+---
+
 ## 8. Kubernetes policy
 
 Kubernetes manifests must not contain real secret values.
@@ -204,6 +226,8 @@ Secret template with fake/example values only
 ```
 
 Avoid committing real Kubernetes `Secret` manifests.
+
+For the current GHCR public-image path, do not add `imagePullSecrets` yet.
 
 If a Kubernetes Secret manifest is required for testing, it must contain fake values only and be clearly marked as non-production/example.
 

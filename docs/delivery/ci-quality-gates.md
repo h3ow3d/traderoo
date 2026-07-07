@@ -132,7 +132,26 @@ Chunk 1 minimum expected checks:
 python dependency install
 pytest app/tests
 docker build of app image
+GHCR image build on pull_request without push
+GHCR image build and push on push to main
+GHCR image build and push on workflow_dispatch
 ```
+
+The CI workflow should publish Traderoo container images to:
+
+```text
+ghcr.io/h3ow3d/traderoo
+```
+
+Tag policy should include:
+
+```text
+latest
+sha-<commit>
+```
+
+CI should authenticate to GHCR with GitHub Actions `GITHUB_TOKEN`.
+Do not require committed registry credentials.
 
 If `mypy` is too noisy early, introduce it only once the project has stable typed models.
 

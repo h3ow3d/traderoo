@@ -18,8 +18,8 @@ spec:
     spec:
       containers:
         - name: traderoo
-          image: traderoo:local
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/h3ow3d/traderoo:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
               name: http
