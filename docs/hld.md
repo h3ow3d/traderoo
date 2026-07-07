@@ -315,7 +315,6 @@ Platform services are shared cluster capabilities and own:
 
 Traderoo application is a consumer and owns:
 
-* root applications Application
 * Traderoo Argo CD Application spec
 * Traderoo Kubernetes manifests
 * Traderoo ServiceAccounts
@@ -330,7 +329,8 @@ Traderoo consumes Vault/ESO capability but does not install or manage Vault/ESO.
 Platform and application GitOps ownership must remain non-cyclical:
 
 * platform root manages platform services
-* applications root manages application-owned Argo CD Application specs
+* platform root creates AppProjects, namespaces, and guardrails first
+* Traderoo application manifest is applied only after `traderoo-poc` AppProject exists
 
 This separation does not weaken safety constraints:
 
@@ -833,7 +833,7 @@ applications/traderoo/k8s/
 ### Argo CD application manifest
 
 ```text
-applications/traderoo/argocd/application.yaml
+applications/traderoo/argocd/poc.yaml
 ```
 
 The deployment model is:

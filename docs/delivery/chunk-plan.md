@@ -114,16 +114,14 @@ This chunk should leave the project with an empty-but-working GitOps path.
 
 ```text
 app/.gitkeep
-applications/traderoo/argocd/application.yaml
-applications/traderoo/k8s/base/namespace.yaml
+applications/traderoo/argocd/poc.yaml
 applications/traderoo/k8s/base/configmap.yaml
 applications/traderoo/k8s/base/kustomization.yaml
-applications/traderoo/k8s/overlays/local/kustomization.yaml
-applications/traderoo/k8s/overlays/local/configmap-patch.yaml
+applications/traderoo/k8s/overlays/poc/kustomization.yaml
+applications/traderoo/k8s/overlays/poc/configmap-patch.yaml
 platform/k3d/cluster.yaml
 platform/bootstrap/argocd/install.md
 platform/bootstrap/argocd/root-platform-application.yaml
-platform/bootstrap/argocd/root-applications-application.yaml
 docs/hld.md
 docs/adr/0001-local-kubernetes-with-k3d.md
 docs/adr/0002-gitops-with-argocd.md

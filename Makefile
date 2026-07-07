@@ -2,10 +2,10 @@ APP_NAME ?= traderoo
 NAMESPACE ?= traderoo-poc
 CLUSTER_NAME ?= traderoo
 ARGOCD_NAMESPACE ?= argocd
-ARGOCD_APP_NAME ?= traderoo
+ARGOCD_APP_NAME ?= traderoo-poc
 K3D_CONFIG ?= platform/k3d/cluster.yaml
-K8S_LOCAL_OVERLAY ?= applications/traderoo/k8s/overlays/local
-ARGOCD_APP_MANIFEST ?= applications/traderoo/argocd/application.yaml
+K8S_POC_OVERLAY ?= applications/traderoo/k8s/overlays/poc
+ARGOCD_APP_MANIFEST ?= applications/traderoo/argocd/poc.yaml
 PLATFORM_CHART ?= platform/charts/platform-services
 
 .PHONY: \
@@ -13,7 +13,8 @@ PLATFORM_CHART ?= platform/charts/platform-services
 	argocd-install argocd-password argocd-port-forward argocd-status \
 	argocd-apply-app argocd-sync argocd-get argocd-delete-app \
 	validate-k8s-local \
-	helm-lint-platform helm-template-platform validate-platform-services
+	helm-lint-platform helm-template-platform validate-platform-services \
+	platform-apply platform-status traderoo-apply traderoo-status bootstrap-local
 
 cluster-create:
 	k3d cluster create --config $(K3D_CONFIG)
@@ -51,7 +52,7 @@ argocd-delete-app:
 	kubectl delete -f $(ARGOCD_APP_MANIFEST)
 
 validate-k8s-local:
-	kubectl apply -k $(K8S_LOCAL_OVERLAY)
+	kubectl apply -k $(K8S_POC_OVERLAY)
 	kubectl get ns $(NAMESPACE)
 	kubectl get configmap $(APP_NAME)-config -n $(NAMESPACE)
 
@@ -62,4 +63,25 @@ helm-template-platform:
 	helm template platform-services $(PLATFORM_CHART) --dry-run=client | tee /tmp/platform-services.yaml >/dev/null
 
 validate-platform-services: helm-lint-platform helm-template-platform
-	grep -E "kind: AppProject|name: platform|name: applications" /tmp/platform-services.yaml
+	grep -E "kind: AppProject|name: platform|name: traderoo-poc|kind: Namespace" /tmp/platform-services.yaml
+	grep -E "name:[[:space:]]*poc|name:[[:space:]]*applications|name:[[:space:]]*traderoo-dev|name:[[:space:]]*traderoo-staging|name:[[:space:]]*traderoo-demo|name:[[:space:]]*traderoo-production" /tmp/platform-services.yaml && exit 1 || true
+
+platform-apply:
+	kubectl apply -f platform/bootstrap/argocd/root-platform-application.yaml
+
+platform-status:
+	kubectl get applications -n $(ARGOCD_NAMESPACE)
+	kubectl get appprojects -n $(ARGOCD_NAMESPACE)
+	kubectl get appproject platform -n $(ARGOCD_NAMESPACE)
+	kubectl get appproject traderoo-poc -n $(ARGOCD_NAMESPACE)
+	kubectl get ns $(NAMESPACE)
+
+traderoo-apply:
+	kubectl apply -f $(ARGOCD_APP_MANIFEST)
+
+traderoo-status:
+	kubectl get application $(ARGOCD_APP_NAME) -n $(ARGOCD_NAMESPACE)
+	kubectl get ns $(NAMESPACE)
+	kubectl get configmap $(APP_NAME)-config -n $(NAMESPACE)
+
+bootstrap-local: argocd-install platform-apply platform-status traderoo-apply traderoo-status

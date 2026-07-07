@@ -47,16 +47,16 @@ Argo CD application manifests will live under:
 applications/traderoo/argocd
 ```
 
-The initial Argo CD Application will be named:
+The initial Argo CD Application for the active environment will be named:
 
 ```text
-traderoo
+traderoo-poc
 ```
 
-It will sync the local overlay:
+It will sync the active POC overlay:
 
 ```text
-applications/traderoo/k8s/overlays/local
+applications/traderoo/k8s/overlays/poc
 ```
 
 The initial sync policy may use:
@@ -65,7 +65,6 @@ The initial sync policy may use:
 automated sync
 prune
 self-heal
-CreateNamespace=true
 ```
 
 The target application namespace will be:

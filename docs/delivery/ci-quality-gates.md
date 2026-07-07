@@ -148,13 +148,21 @@ no broker secrets exist
 
 CI should not apply manifests to a real cluster unless explicitly added later.
 
+Operational bootstrap order should remain:
+
+```text
+apply root platform Application first
+wait for AppProjects (platform and traderoo-poc) and namespace traderoo-poc
+apply Traderoo Application after platform is healthy
+```
+
 Expected validation command shape:
 
 ```bash
 helm lint platform/charts/platform-services
 helm template platform-services platform/charts/platform-services --dry-run=client
 kubectl kustomize applications/traderoo/k8s/base
-kubectl kustomize applications/traderoo/k8s/overlays/local
+kubectl kustomize applications/traderoo/k8s/overlays/poc
 ```
 
 ---

@@ -13,7 +13,7 @@ Required defaults in this repository:
 - `APP_NAME=traderoo`
 - `EXECUTION_MODE=PAPER_ONLY`
 - `REVIEW_PROVIDER=mock`
-- `ENVIRONMENT=local` (local overlay)
+- `ENVIRONMENT=poc` (poc overlay)
 - Namespace: `traderoo-poc`
 - k3d cluster name: `traderoo`
 
@@ -28,7 +28,7 @@ This chunk includes:
 - Argo CD install guide
 - separate platform bootstrap and application ownership layout
 - platform-services Helm wrapper chart skeleton for AppProjects
-- Kustomize base and local overlay placeholder manifests
+- Kustomize base and poc overlay placeholder manifests
 - Argo CD Application manifest
 - Makefile operator commands
 
@@ -78,15 +78,24 @@ kubectl get configmap traderoo-config -n traderoo-poc -o yaml
 Apply Argo CD application after replacing the repository URL placeholder:
 
 ```bash
-make argocd-apply-app
+make platform-apply
+make platform-status
+make traderoo-apply
+make traderoo-status
 ```
 
 Path ownership model:
 
 - Platform bootstrap: `platform/bootstrap/argocd/`
 - Platform services chart: `platform/charts/platform-services/`
-- Traderoo application Argo CD spec: `applications/traderoo/argocd/application.yaml`
+- Traderoo application Argo CD spec: `applications/traderoo/argocd/poc.yaml`
 - Traderoo manifests: `applications/traderoo/k8s/`
+
+Bootstrap order:
+
+- Apply platform first.
+- Wait for AppProjects (`platform` and `traderoo-poc`) and namespace (`traderoo-poc`).
+- Then apply Traderoo Application.
 
 Validate the platform chart locally:
 

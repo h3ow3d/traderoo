@@ -4,7 +4,7 @@ projects:
   platform:
     enabled: true
     name: platform
-    description: Platform-owned services and guardrails.
+    description: Platform-owned services, namespaces, and guardrails.
     sourceRepos:
       - "*"
     destinations:
@@ -14,19 +14,70 @@ projects:
         server: https://kubernetes.default.svc
       - namespace: external-secrets
         server: https://kubernetes.default.svc
-    clusterResourceWhitelist:
-      - group: "*"
-        kind: "*"
-
-  applications:
-    enabled: true
-    name: applications
-    description: Application-owned deployments only.
-    sourceRepos:
-      - "*"
-    destinations:
       - namespace: traderoo-poc
         server: https://kubernetes.default.svc
     clusterResourceWhitelist:
       - group: "*"
         kind: "*"
+
+applicationEnvironments:
+  - enabled: true
+    appName: traderoo
+    environment: poc
+    projectName: traderoo-poc
+    namespace: traderoo-poc
+    description: Traderoo POC application environment.
+    sourceRepos:
+      - "*"
+    destinations:
+      - namespace: traderoo-poc
+        server: https://kubernetes.default.svc
+    clusterResourceWhitelist: []
+  - enabled: false
+    appName: traderoo
+    environment: dev
+    projectName: traderoo-dev
+    namespace: traderoo-dev
+    description: Future Traderoo dev application environment.
+    sourceRepos:
+      - "*"
+    destinations:
+      - namespace: traderoo-dev
+        server: https://kubernetes.default.svc
+    clusterResourceWhitelist: []
+  - enabled: false
+    appName: traderoo
+    environment: staging
+    projectName: traderoo-staging
+    namespace: traderoo-staging
+    description: Future Traderoo staging application environment.
+    sourceRepos:
+      - "*"
+    destinations:
+      - namespace: traderoo-staging
+        server: https://kubernetes.default.svc
+    clusterResourceWhitelist: []
+  - enabled: false
+    appName: traderoo
+    environment: demo
+    projectName: traderoo-demo
+    namespace: traderoo-demo
+    description: Future Traderoo demo application environment.
+    sourceRepos:
+      - "*"
+    destinations:
+      - namespace: traderoo-demo
+        server: https://kubernetes.default.svc
+    clusterResourceWhitelist: []
+  - enabled: false
+    appName: traderoo
+    environment: production
+    projectName: traderoo-production
+    namespace: traderoo-production
+    description: Future Traderoo production application environment.
+    sourceRepos:
+      - "*"
+    destinations:
+      - namespace: traderoo-production
+        server: https://kubernetes.default.svc
+    clusterResourceWhitelist: []

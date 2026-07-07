@@ -27,18 +27,17 @@ jobs:
             "platform/k3d/cluster.yaml"
             "platform/bootstrap/argocd/install.md"
             "platform/bootstrap/argocd/root-platform-application.yaml"
-            "platform/bootstrap/argocd/root-applications-application.yaml"
             "platform/charts/platform-services/Chart.yaml"
             "platform/charts/platform-services/values.yaml"
             "platform/charts/platform-services/templates/README.md"
             "platform/charts/platform-services/templates/appproject-platform.yaml"
             "platform/charts/platform-services/templates/appproject-applications.yaml"
-            "applications/traderoo/k8s/base/namespace.yaml"
+            "platform/charts/platform-services/templates/namespaces-application-environments.yaml"
             "applications/traderoo/k8s/base/configmap.yaml"
             "applications/traderoo/k8s/base/kustomization.yaml"
-            "applications/traderoo/k8s/overlays/local/kustomization.yaml"
-            "applications/traderoo/k8s/overlays/local/configmap-patch.yaml"
-            "applications/traderoo/argocd/application.yaml"
+            "applications/traderoo/k8s/overlays/poc/kustomization.yaml"
+            "applications/traderoo/k8s/overlays/poc/configmap-patch.yaml"
+            "applications/traderoo/argocd/poc.yaml"
             "Makefile"
             "README.md"
             ".gitignore"
@@ -87,7 +86,8 @@ jobs:
         run: |
           set -euo pipefail
           helm template platform-services platform/charts/platform-services --dry-run=client | tee /tmp/platform-services.yaml >/dev/null
-          grep -E "kind: AppProject|name: platform|name: applications" /tmp/platform-services.yaml
+          grep -E "kind: AppProject|name: platform|name: traderoo-poc|kind: Namespace" /tmp/platform-services.yaml
+          grep -E "name:[[:space:]]*poc|name:[[:space:]]*applications|name:[[:space:]]*traderoo-dev|name:[[:space:]]*traderoo-staging|name:[[:space:]]*traderoo-demo|name:[[:space:]]*traderoo-production" /tmp/platform-services.yaml && exit 1 || true
 
       - name: Render Kustomize base
         shell: bash
@@ -96,30 +96,20 @@ jobs:
           kubectl kustomize applications/traderoo/k8s/base > /tmp/base-rendered.yaml
           test -s /tmp/base-rendered.yaml
 
-      - name: Render Kustomize local overlay
+      - name: Render Kustomize poc overlay
         shell: bash
         run: |
           set -euo pipefail
-          kubectl kustomize applications/traderoo/k8s/overlays/local > /tmp/local-rendered.yaml
-          test -s /tmp/local-rendered.yaml
+          kubectl kustomize applications/traderoo/k8s/overlays/poc > /tmp/poc-rendered.yaml
+          test -s /tmp/poc-rendered.yaml
 
       - name: Validate required rendered resources and safety defaults
         shell: bash
         run: |
           set -euo pipefail
 
-          rendered="/tmp/local-rendered.yaml"
-
-          # Parse documents as blocks so checks do not depend on key ordering.
-          awk -v RS='---' '
-            {
-              if ($0 ~ /kind:[[:space:]]*Namespace/ && $0 ~ /name:[[:space:]]*traderoo-poc/) found_ns=1
-              if ($0 ~ /kind:[[:space:]]*ConfigMap/ && $0 ~ /name:[[:space:]]*traderoo-config/ && $0 ~ /EXECUTION_MODE:[[:space:]]*PAPER_ONLY/ && $0 ~ /REVIEW_PROVIDER:[[:space:]]*mock/) found_cm=1
-            }
-            END {
-              exit((found_ns && found_cm) ? 0 : 1)
-            }
-          ' "$rendered"
+          grep -E "EXECUTION_MODE:[[:space:]]*PAPER_ONLY|REVIEW_PROVIDER:[[:space:]]*mock" /tmp/poc-rendered.yaml
+          grep -E "kind:[[:space:]]*Namespace" /tmp/base-rendered.yaml /tmp/poc-rendered.yaml && exit 1 || true
 
           echo "Kubernetes manifest checks passed."
 

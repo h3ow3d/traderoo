@@ -104,23 +104,22 @@ Structure:
 applications/
 └── traderoo/
     ├── argocd/
-    │   └── application.yaml
+    │   └── poc.yaml
     └── k8s/
         ├── base/
-        │   ├── namespace.yaml
         │   ├── configmap.yaml
         │   └── kustomization.yaml
         └── overlays/
-            └── local/
+            └── poc/
                 ├── kustomization.yaml
                 └── configmap-patch.yaml
 ```
 
 The `base/` directory contains reusable Kubernetes manifests.
 
-The `overlays/local/` directory contains local development configuration for the desktop Kubernetes cluster.
+The `overlays/poc/` directory contains active POC environment configuration.
 
-Argo CD will point at the local overlay.
+Argo CD will point at the active POC overlay.
 
 ### `platform/`
 
@@ -135,8 +134,7 @@ platform/
 └── bootstrap/
     └── argocd/
         ├── install.md
-        ├── root-platform-application.yaml
-        └── root-applications-application.yaml
+        └── root-platform-application.yaml
 ```
 
 This is where local Kubernetes and Argo CD bootstrap material lives.

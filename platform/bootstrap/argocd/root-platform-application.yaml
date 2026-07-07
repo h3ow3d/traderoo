@@ -6,8 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    # Replace this placeholder with your actual GitHub repository URL.
-    repoURL: https://github.com/REPLACE_ME/traderoo.git
+    repoURL: https://github.com/h3ow3d/traderoo.git
     targetRevision: HEAD
     path: platform/charts/platform-services
     helm:

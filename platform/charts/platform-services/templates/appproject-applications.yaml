@@ -1,17 +1,24 @@
-{{- if .Values.projects.applications.enabled }}
+{{- range $env := .Values.applicationEnvironments }}
+{{- if $env.enabled }}
+---
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: {{ .Values.projects.applications.name }}
-  namespace: {{ .Values.argocdNamespace }}
+  name: {{ $env.projectName }}
+  namespace: {{ $.Values.argocdNamespace }}
   labels:
-    {{- include "platform-services.labels" . | nindent 4 }}
+    {{- include "platform-services.labels" $ | nindent 4 }}
 spec:
-  description: {{ .Values.projects.applications.description | quote }}
+  description: {{ $env.description | quote }}
   sourceRepos:
-    {{- toYaml .Values.projects.applications.sourceRepos | nindent 4 }}
+    {{- toYaml $env.sourceRepos | nindent 4 }}
   destinations:
-    {{- toYaml .Values.projects.applications.destinations | nindent 4 }}
+    {{- toYaml $env.destinations | nindent 4 }}
+{{- if $env.clusterResourceWhitelist }}
   clusterResourceWhitelist:
-    {{- toYaml .Values.projects.applications.clusterResourceWhitelist | nindent 4 }}
+    {{- toYaml $env.clusterResourceWhitelist | nindent 4 }}
+{{- else }}
+  clusterResourceWhitelist: []
+{{- end }}
+{{- end }}
 {{- end }}
